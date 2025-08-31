@@ -2,32 +2,26 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const { type = "carousel", locale = "tr", limit = 20, offset = 0 } = req.query as any
+    const { status, limit = 50, offset = 0 } = req.query as any
     
     // Get database connection
     const knex = req.scope.resolve("__pg_connection__")
     
-    let query = knex('ui_media')
-      .select('id', 'type', 'title', 'image_url', 'link_url', 'sort_order', 'is_active', 'locale')
-      .where('is_active', true)
+    let query = knex('contact_message')
+      .select('id', 'name', 'email', 'phone', 'subject', 'message', 'order_id', 'status', 'created_at', 'updated_at')
     
-    if (type) {
-      query = query.where('type', type)
-    }
-    
-    if (locale) {
-      query = query.where('locale', locale)
+    if (status) {
+      query = query.where('status', status)
     }
     
     const items = await query
-      .orderBy('sort_order', 'asc')
       .orderBy('created_at', 'desc')
       .limit(Number(limit))
       .offset(Number(offset))
     
-    res.json({ items })
+    res.json({ count: items.length, items })
   } catch (error) {
-    console.error("Error in GET /store/ui-media:", error)
+    console.error("Error in GET /admin/contact:", error)
     res.status(500).json({ error: "Internal server error", details: error.message })
   }
 }
