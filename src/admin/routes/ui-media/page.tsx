@@ -6,7 +6,7 @@ function UiMediaPage() {
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
   const [linkUrl, setLinkUrl] = useState("")
-  const [sort, setSort] = useState(0)
+  const [sort, setSort] = useState(items.length)
   const [active, setActive] = useState(true)
   const [selectedType, setSelectedType] = useState<"carousel" | "banner">("carousel")
   const [activeTab, setActiveTab] = useState<"carousel" | "banner">("carousel")
@@ -74,7 +74,7 @@ function UiMediaPage() {
       if (createResponse.ok) {
         setTitle("")
         setLinkUrl("")
-        setSort(0)
+        setSort(items.length + 1)
         setFile(null)
         // Reload the current tab to show the new item
         await load(selectedType)
@@ -258,11 +258,13 @@ function UiMediaPage() {
           value={linkUrl} 
           onChange={(e) => setLinkUrl(e.target.value)} 
         />
+        <label htmlFor="sort">Sıra</label>
         <input 
           type="number" 
           placeholder="Sıra" 
-          value={sort} 
-          onChange={(e) => setSort(Number(e.target.value))} 
+          value={Math.max(0, items.length - 1)} 
+          onChange={(e) => setSort(Number(e.target.value + 1))} 
+          disabled
         />
         <label>
           <input 

@@ -1,5 +1,5 @@
 import { MedusaService } from "@medusajs/framework/utils"
-import { UiMedia } from "../models/ui-media"
+import { UiMedia } from "../modules/ui-media/models/ui-media"
 
 type Filter = {
   type?: "carousel" | "banner"
@@ -12,7 +12,7 @@ export default class UiMediaService extends MedusaService({
 }) {
   async listPublic(filter: Filter = {}, { limit = 20, offset = 0 } = {}) {
     const now = new Date()
-    return await this.listAndCountUiMedia(
+    return await this.listAndCountUiMedias(
       {
         where: {
           ...(filter.type ? { type: filter.type } : {}),
@@ -34,23 +34,11 @@ export default class UiMediaService extends MedusaService({
     )
   }
 
-  async list(options: any = {}, context: any = {}) {
-    return await this.listAndCountUiMedia(options)
-  }
-
-  async createUiMedia(data: any) {
-    return await this.createUiMedia(data)
-  }
-
-  async listAndCountUiMedia(options: any = {}) {
-    // Use the underlying repository directly
-    const repo = this.container.resolve("manager").getRepository("UiMedia")
-    return await repo.findAndCount(options)
+  async list(options: any = {}) {
+    return await this.listAndCountUiMedias(options)
   }
 
   async createUiMediaItem(data: any) {
-    const repo = this.container.resolve("manager").getRepository("UiMedia")
-    const item = repo.create(data)
-    return await repo.save(item)
+    return await this.createUiMedias(data)
   }
 }
