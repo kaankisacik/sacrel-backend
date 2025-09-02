@@ -10,15 +10,41 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     
     const reviews = await knex('product_review')
       .select(
-        'id', 'rating', 'title', 'comment', 'is_verified_purchase', 
-        'helpful_count', 'created_at'
+        'product_review.id', 'product_review.rating', 'product_review.title', 
+        'product_review.comment', 'product_review.is_verified_purchase', 
+        'product_review.helpful_count', 'product_review.created_at',
+        'customer.first_name', 'customer.last_name'
       )
-      .where('product_id', product_id)
-      .where('status', status)
-      .whereNull('deleted_at')
-      .orderBy('created_at', 'desc')
+      .leftJoin('customer', 'product_review.customer_id', 'customer.id')
+      .where('product_review.product_id', product_id)
+      .where('product_review.status', status)
+      .whereNull('product_review.deleted_at')
+      .orderBy('product_review.created_at', 'desc')
       .limit(Number(limit))
       .offset(Number(offset))
+
+    // Mask customer names for privacy
+    const maskedReviews = reviews.map(review => {
+      const maskName = (firstName, lastName) => {
+        if (!firstName && !lastName) return "Anonim Müşteri"
+        
+        const first = firstName ? `${firstName.charAt(0)}${'*'.repeat(Math.max(firstName.length - 1, 2))}` : ""
+        const last = lastName ? `${lastName.charAt(0)}${'*'.repeat(Math.max(lastName.length - 1, 2))}` : ""
+        
+        return [first, last].filter(Boolean).join(" ") || "Anonim Müşteri"
+      }
+
+      return {
+        id: review.id,
+        rating: review.rating,
+        title: review.title,
+        comment: review.comment,
+        is_verified_purchase: review.is_verified_purchase,
+        helpful_count: review.helpful_count,
+        created_at: review.created_at,
+        customer_name: maskName(review.first_name, review.last_name)
+      }
+    })
 
     // Get average rating and total count
     const stats = await knex('product_review')
@@ -26,13 +52,13 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       .where('status', 'approved')
       .whereNull('deleted_at')
       .select(
-        knex.avg('rating as average_rating'),
-        knex.count('* as total_reviews')
+        knex.avg('rating').as('average_rating'),
+        knex.count('*').as('total_reviews')
       )
       .first()
 
     res.json({
-      reviews,
+      reviews: maskedReviews,
       stats: {
         average_rating: stats?.average_rating ? parseFloat(stats.average_rating) : 0,
         total_reviews: parseInt(stats?.total_reviews || '0')

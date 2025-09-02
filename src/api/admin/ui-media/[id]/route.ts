@@ -1,4 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import fs from "fs"
+import path from "path"
 
 export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
@@ -41,6 +43,39 @@ export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
     // Get database connection
     const knex = req.scope.resolve("__pg_connection__")
     
+    // First, get the ui-media record to extract the image URL
+    const [uiMedia] = await knex('ui_media')
+      .where('id', id)
+      .select('*')
+    
+    if (!uiMedia) {
+      return res.status(404).json({ error: "UI Media not found" })
+    }
+    
+    // Extract filename from image_url and delete the file
+    if (uiMedia.image_url) {
+      try {
+        // Extract the filename from the URL (e.g., "http://localhost:9000/static/filename.jpg" -> "filename.jpg")
+        const urlParts = uiMedia.image_url.split('/')
+        const filename = urlParts[urlParts.length - 1]
+        
+        // Construct the file path (static directory is in the project root)
+        const filePath = path.join(process.cwd(), 'static', filename)
+        
+        // Check if file exists before attempting to delete
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+          console.log(`Deleted file: ${filePath}`)
+        } else {
+          console.warn(`File not found: ${filePath}`)
+        }
+      } catch (fileError) {
+        console.error("Error deleting file:", fileError)
+        // Continue with database deletion even if file deletion fails
+      }
+    }
+    
+    // Delete the database record
     const deleted = await knex('ui_media')
       .where('id', id)
       .del()

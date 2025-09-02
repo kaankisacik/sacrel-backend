@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # PostgreSQL veritabanı
+  postgres:
+    image: postgres:15-alpine
+    container_name: sacrel-postgres
+    environment:
+      POSTGRES_DB: sacrel_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sacrel-network
+
+  # Medusa backend
+  medusa-backend:
+    build: .
+    container_name: sacrel-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/sacrel_db
+      JWT_SECRET: your-jwt-secret-key
+      COOKIE_SECRET: your-cookie-secret-key
+      STORE_CORS: http://localhost:3000
+      ADMIN_CORS: http://localhost:9000
+      AUTH_CORS: http://localhost:3000,http://localhost:9000
+    ports:
+      - "9000:9000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./static:/app/static
+    networks:
+      - sacrel-network
+
+volumes:
+  postgres_data:
+
+networks:
+  sacrel-network:
+    driver: bridge
