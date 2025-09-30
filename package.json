@@ -33,6 +33,7 @@
     "@mikro-orm/postgresql": "6.4.3",
     "awilix": "^8.0.1",
     "date-fns": "^4.1.0",
+    "iyzipay": "^2.0.64",
     "pg": "^8.13.0"
   },
   "devDependencies": {
