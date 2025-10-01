@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const Iyzipay: any = require("iyzipay");
 
+export type IyzicoBINCheckBody = {
+  price: string;
+  binNumber: string;
+};
+
 export type IyzicoInitPWIBody = {
   locale: string;
   conversationId: string;
@@ -78,12 +83,26 @@ export class IyzicoDirect {
     this.client = new Iyzipay({ apiKey, secretKey, uri });
   }
 
+  async binCheck(body: IyzicoBINCheckBody) {
+    const request = {
+      locale: "tr",
+      price: toMoney(body.price),
+      binNumber: String(body.binNumber),
+    };
+
+    return await new Promise<any>((resolve, reject) => {
+      this.client.binNumber.retrieve(request, (err: any, res: any) =>
+        err ? reject(err) : resolve(res)
+      );
+    });
+  }
+
   async init3DS(body: IyzicoInit3DSBody) {
     const request = {
       ...body,
       price: toMoney(body.price),
       paidPrice: toMoney(body.paidPrice),
-      installment: String(body.installment ?? 1),
+      installment: 1, //String(body.installment ?? 1)
       currency: String(body.currency || "TRY").toUpperCase(),
       paymentCard: {
         ...body.paymentCard,
