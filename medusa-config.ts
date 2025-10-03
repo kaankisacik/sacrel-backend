@@ -47,6 +47,15 @@ module.exports = defineConfig({
             id: "dev-fake-cc", // will be stored as pp_fake-cc_dev-fake-cc
             options: { testMode: true },
           },
+          {
+            resolve: "./src/modules/iyzico-payment",
+            id: "iyzico", // will be stored as pp_iyzico_iyzico
+            options: {
+              apiKey: process.env.IYZI_API_KEY,
+              secretKey: process.env.IYZI_SECRET_KEY,
+              baseUrl: process.env.IYZI_BASE_URL,
+            },
+          },
         ],
       },
     },

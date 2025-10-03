@@ -1,0 +1,138 @@
+// Bu script'i browser console'da çalıştırın (F12 > Console)
+// Order detail sayfasında İyzico Payment ID'sini gösterir
+
+(function() {
+  // URL'den order ID'yi al
+  const orderId = window.location.pathname.split('/').pop();
+  
+  if (!orderId || !orderId.startsWith('order_')) {
+    console.log('❌ Bu sayfa bir order detail sayfası değil');
+    return;
+  }
+  
+  console.log(`🔍 Order ID: ${orderId}`);
+  
+  // İyzico bilgilerini getir
+  fetch(`/admin/iyzico/order-info/${orderId}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('📥 İyzico API Response:', data);
+      
+      // Mevcut widget'ı kaldır (varsa)
+      const existingWidget = document.getElementById('iyzico-widget');
+      if (existingWidget) {
+        existingWidget.remove();
+      }
+      
+      // Widget oluştur
+      const widget = document.createElement('div');
+      widget.id = 'iyzico-widget';
+      widget.style.cssText = `
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        background-color: #fff;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      `;
+      
+      if (data.found && data.iyzico_payment_id) {
+        widget.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 style="margin: 0; font-size: 18px; font-weight: 600;">İyzico Payment</h2>
+            <span style="
+              background-color: #10b981;
+              color: white;
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 500;
+            ">İyzico</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #6b7280; font-size: 14px;">Payment ID:</span>
+            <span style="
+              font-family: monospace;
+              font-size: 14px;
+              font-weight: 500;
+              background-color: #f3f4f6;
+              padding: 4px 8px;
+              border-radius: 4px;
+              border: 1px solid #d1d5db;
+            ">"${data.iyzico_payment_id}"</span>
+          </div>
+        `;
+        
+        console.log(`✅ İyzico Payment ID: "${data.iyzico_payment_id}"`);
+      } else {
+        widget.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 style="margin: 0; font-size: 18px; font-weight: 600;">İyzico Payment</h2>
+            <span style="
+              background-color: #f59e0b;
+              color: white;
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 500;
+            ">Not İyzico</span>
+          </div>
+          <p style="margin: 0; color: #6b7280; font-size: 14px;">
+            Bu sipariş İyzico ile ödenmemiş.
+          </p>
+        `;
+        
+        console.log('❌ Bu sipariş İyzico ile ödenmemiş');
+      }
+      
+      // Widget'ı sayfaya ekle (Order Details'ın sonuna)
+      const orderDetailsSection = document.querySelector('[data-testid="order-summary"]') || 
+                                  document.querySelector('.order-summary') ||
+                                  document.querySelector('main') ||
+                                  document.body;
+      
+      if (orderDetailsSection) {
+        orderDetailsSection.appendChild(widget);
+        console.log('✅ İyzico widget sayfaya eklendi');
+      } else {
+        console.log('⚠️ Order details section bulunamadı, widget body\'ye ekleniyor');
+        document.body.appendChild(widget);
+      }
+    })
+    .catch(error => {
+      console.error('❌ İyzico API hatası:', error);
+      
+      // Hata widget'ı
+      const widget = document.createElement('div');
+      widget.id = 'iyzico-widget';
+      widget.style.cssText = `
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        background-color: #fef2f2;
+      `;
+      widget.innerHTML = `
+        <h2 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #dc2626;">
+          İyzico Payment - Hata
+        </h2>
+        <p style="margin: 0; color: #7f1d1d; font-size: 14px;">
+          İyzico bilgileri alınamadı: ${error.message}
+        </p>
+      `;
+      
+      document.body.appendChild(widget);
+    });
+})();
+
+// Otomatik çalıştırma için bookmark oluşturun:
+console.log(`
+📋 BOOKMARK OLUŞTURUN:
+1. Bu kodu kopyalayın (javascript: ile başlayan kısım):
+
+javascript:(function(){const orderId=window.location.pathname.split('/').pop();if(!orderId||!orderId.startsWith('order_')){alert('Bu sayfa bir order detail sayfası değil');return;}fetch('/admin/iyzico/order-info/'+orderId).then(r=>r.json()).then(data=>{const existing=document.getElementById('iyzico-widget');if(existing)existing.remove();const widget=document.createElement('div');widget.id='iyzico-widget';widget.style.cssText='border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;background-color:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.1)';if(data.found&&data.iyzico_payment_id){widget.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2 style="margin:0;font-size:18px;font-weight:600">İyzico Payment</h2><span style="background:#10b981;color:white;padding:4px 8px;border-radius:4px;font-size:12px">İyzico</span></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="color:#6b7280;font-size:14px">Payment ID:</span><span style="font-family:monospace;font-size:14px;font-weight:500;background:#f3f4f6;padding:4px 8px;border-radius:4px;border:1px solid #d1d5db">"'+data.iyzico_payment_id+'"</span></div>';}else{widget.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2 style="margin:0;font-size:18px;font-weight:600">İyzico Payment</h2><span style="background:#f59e0b;color:white;padding:4px 8px;border-radius:4px;font-size:12px">Not İyzico</span></div><p style="margin:0;color:#6b7280;font-size:14px">Bu sipariş İyzico ile ödenmemiş.</p>';}document.body.appendChild(widget);}).catch(err=>{alert('İyzico API hatası: '+err.message);});})();
+
+2. Browser'da yeni bookmark oluşturun ve bu kodu URL kısmına yapıştırın
+3. Order detail sayfasında bookmark'a tıklayın
+4. İyzico widget otomatik olarak görünecek!
+`);

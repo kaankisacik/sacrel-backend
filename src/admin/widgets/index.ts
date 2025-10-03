@@ -1,0 +1,1 @@
+export { default as IyzicoOrderDetailsWidget } from "./iyzico-order-details"
