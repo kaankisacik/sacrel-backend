@@ -62,24 +62,14 @@ const IyzicoOrderDetailsWidget = ({ data }: DetailWidgetProps<AdminOrder>) => {
   if (!iyzicoInfo.found || !iyzicoInfo.iyzico_payment_id) {
     return (
       <div style={{
-        border: "1px solid #e5e7eb",
+        border: "1px solid #343437",
         borderRadius: "8px",
         padding: "16px",
-        margin: "16px 0",
-        backgroundColor: "#fff"
+      backgroundColor: "#212124"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>İyzico Payment</h2>
-          <span style={{
-            backgroundColor: "#f59e0b",
-            color: "white",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontWeight: "500"
-          }}>
-            Not İyzico
-          </span>
+          
         </div>
         <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>
           Bu sipariş İyzico ile ödenmemiş.
@@ -93,7 +83,6 @@ const IyzicoOrderDetailsWidget = ({ data }: DetailWidgetProps<AdminOrder>) => {
       border: "1px solid #343437",
       borderRadius: "8px",
       padding: "16px",
-      margin: "16px 0",
       backgroundColor: "#212124"
     }}>
      
